@@ -1,8 +1,23 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+}
+
+// Τα στοιχεία υπογραφής (passwords, alias) ΔΕΝ μπαίνουν ποτέ απευθείας εδώ, γιατί το
+// build.gradle.kts ανεβαίνει στο git — μπαίνουν σε ξεχωριστό keystore.properties στη ρίζα
+// του project, το οποίο είναι στο .gitignore και υπάρχει μόνο τοπικά σε κάθε μηχάνημα.
+// Αν το αρχείο λείπει (π.χ. σε μηχάνημα άλλου συνεργάτη που δεν έχει το keystore), δεν
+// πετάμε σφάλμα εδώ — απλά το signing config του release παραμένει άδειο/μη λειτουργικό,
+// ώστε τα debug builds να συνεχίζουν να δουλεύουν κανονικά.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -21,8 +36,25 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Το signing config διαβάζει τα στοιχεία από το keystoreProperties object παραπάνω,
+    // ΜΟΝΟ αν το keystore.properties υπήρχε — αλλιώς μένουν όλα null και το release build
+    // απλά δεν θα είναι υπογεγραμμένο (δεν σκάει το build λόγω λείπον αρχείο).
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // Έτσι κάθε release build (bundleRelease ή ο οδηγός "Generate Signed Bundle")
+            // υπογράφεται αυτόματα, χωρίς να χρειάζεται να ξαναδίνεις τα στοιχεία κάθε φορά.
+            signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = false
             }
