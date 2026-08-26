@@ -1,0 +1,96 @@
+<resources>
+    <string name="app_name">XeiristisExamQuiz</string>
+
+    <!-- Κοινά strings της εφαρμογής, χρησιμοποιούνται σε περισσότερες από μία οθόνες -->
+    <string name="app_display_name">Εξάσκηση Χειριστών Μηχανημάτων</string>
+    <!-- Το επίσημο, μεγάλο κείμενο της εξέτασης· εμφανίζεται σαν υπότιτλος κάτω από το app_display_name στο HomeScreen -->
+    <string name="home_official_title">Εξετάσεις για τις Επαγγελματικές Άδειες Χειριστών Μηχανημάτων Έργου - Διαδικασία Εξέτασης Θεωρητικού Μέρους</string>
+    <string name="app_version_format">Έκδοση %1$s</string>
+    <string name="app_copyright_text">© 2026 — Με την επιφύλαξη παντός δικαιώματος.</string>
+
+    <!-- Κοινά UI στοιχεία (BackTopAppBar, οθόνη σφάλματος) -->
+    <string name="common_back_content_description">Πίσω</string>
+    <string name="error_screen_title">Δεν ήταν δυνατή η φόρτωση της εφαρμογής</string>
+    <string name="error_unknown_data_load">Άγνωστο σφάλμα κατά τη φόρτωση των δεδομένων.</string>
+
+    <!-- OptionRow (κοινό component εξάσκησης/τεστ) -->
+    <string name="option_row_state_correct">Σωστή απάντηση</string>
+    <string name="option_row_state_wrong_selected">Η απάντησή σας: λανθασμένη</string>
+
+    <!-- Κοινή μορφή "Ερώτηση X από Y" (Εξάσκηση + Τελικό Τεστ) -->
+    <string name="question_progress_format">Ερώτηση %1$d από %2$d</string>
+
+    <!-- Κοινές ενδείξεις επιτυχίας/αποτυχίας (Αποτελέσματα Τεστ + Ιστορικό) -->
+    <string name="exam_result_passed">ΕΠΙΤΥΧΙΑ</string>
+    <string name="exam_result_failed">ΑΠΟΤΥΧΙΑ</string>
+
+    <!-- Τίτλοι οθονών που επαναχρησιμοποιούνται και ως κείμενο κουμπιού στο HomeScreen -->
+    <string name="exam_title">Τελικό Τεστ</string>
+    <string name="history_title">Ιστορικό</string>
+
+    <!-- HomeScreen -->
+    <string name="home_about_content_description">Σχετικά</string>
+    <string name="home_menu_practice">Εξάσκηση ανά κεφάλαιο</string>
+
+    <!-- ChapterListScreen -->
+    <string name="chapter_list_title">Κεφάλαια</string>
+
+    <!-- PracticeQuizScreen -->
+    <string name="practice_answer_correct">Σωστή απάντηση.</string>
+    <string name="practice_answer_wrong">Λανθασμένη απάντηση.</string>
+    <string name="practice_check_answer_button">Έλεγχος απάντησης</string>
+    <string name="practice_next_question_button">Επόμενη ερώτηση</string>
+    <string name="practice_finish_chapter_button">Ολοκλήρωση κεφαλαίου</string>
+
+    <!-- ExamScreen -->
+    <string name="exam_generation_error_title">Δεν ήταν δυνατή η δημιουργία του τεστ</string>
+    <string name="exam_questions_label">Ερωτήσεις</string>
+    <string name="exam_flag_review_button">Επανέλεγχος</string>
+    <string name="exam_previous_button">Προηγούμενη</string>
+    <string name="exam_next_button">Επόμενη</string>
+    <string name="exam_submit_button">Ολοκλήρωση τεστ</string>
+    <string name="exam_submit_dialog_title">Ολοκλήρωση τεστ;</string>
+    <string name="exam_submit_dialog_answered_format">Έχετε απαντήσει %1$d από %2$d ερωτήσεις.</string>
+    <string name="exam_submit_dialog_unanswered_format">Αναπάντητες: %1$d</string>
+    <string name="exam_submit_dialog_flagged_format">Σημειωμένες για επανέλεγχο: %1$d</string>
+    <string name="exam_submit_dialog_warning">Μετά την υποβολή δεν θα είναι δυνατή η αλλαγή των απαντήσεών σας.</string>
+    <string name="exam_submit_dialog_confirm">Υποβολή</string>
+    <string name="exam_submit_dialog_review_button">Επιστροφή για έλεγχο</string>
+    <string name="exam_submit_dialog_cancel">Ακύρωση</string>
+    <string name="exam_legend_unanswered">Αναπάντητη</string>
+    <string name="exam_legend_flagged">Για επανέλεγχο</string>
+    <string name="exam_legend_answered">Απαντημένη</string>
+    <string name="exam_legend_not_visited">Δεν έχει εμφανιστεί</string>
+    <string name="exam_exit_dialog_title">Έξοδος από το τεστ;</string>
+    <string name="exam_exit_dialog_message">Το τεστ θα ακυρωθεί και δεν θα καταχωρηθεί στο ιστορικό σας. Είστε σίγουροι ότι θέλετε να συνεχίσετε;</string>
+    <string name="exam_exit_dialog_confirm">Έξοδος</string>
+
+    <!-- ExamResultsScreen -->
+    <string name="exam_results_title">Αποτελέσματα Τεστ</string>
+    <string name="exam_results_score_format">%1$d / %2$d</string>
+    <string name="exam_results_percentage_format">Ποσοστό επιτυχίας: %1$.1f%% (απαιτούνται %2$d%%)</string>
+    <string name="exam_results_back_home_button">Επιστροφή στην αρχική οθόνη</string>
+    <string name="exam_results_wrong_answers_header_format">Λάθος απαντήσεις (%1$d)</string>
+    <!-- Τα δύο παρακάτω τυλίγονται σε "..." για να διατηρηθούν τα δύο leading spaces -->
+    <string name="exam_results_correct_answer_suffix">"  (Σωστή απάντηση)"</string>
+    <string name="exam_results_your_answer_suffix">"  (Η απάντησή σας)"</string>
+
+    <!-- HistoryScreen -->
+    <string name="history_empty_message">Δεν έχει καταγραφεί ακόμη καμία προσπάθεια τεστ.</string>
+    <string name="history_score_format">%1$d/%2$d (%3$.1f%%)</string>
+
+    <!-- AboutScreen -->
+    <string name="about_title">Σχετικά</string>
+    <string name="about_purpose_title">Σχετικά με την εφαρμογή</string>
+    <string name="about_purpose_text">Η εφαρμογή αυτή δημιουργήθηκε για να βοηθήσει τους υποψήφιους χειριστές μηχανημάτων έργου στην προετοιμασία τους για τις θεωρητικές εξετάσεις πιστοποίησης. Μπορείτε να εξασκηθείτε κεφάλαιο προς κεφάλαιο, μαθαίνοντας τις σωστές απαντήσεις, και, όταν αισθάνεστε έτοιμοι, να δοκιμάσετε τις γνώσεις σας σε πλήρη προσομοίωση της πραγματικής εξέτασης, με χρονόμετρο και τις ίδιες συνθήκες βαθμολόγησης.</string>
+    <string name="about_help_title">Βοήθεια</string>
+    <string name="about_help_text">Στο Τελικό Τεστ, το κουμπί «Επανέλεγχος» σημειώνει την ερώτηση που βλέπετε, ώστε να τη βρίσκετε εύκολα και να την επανεξετάζετε πριν την υποβολή — δεν είναι απαραίτητο να απαντήσετε αμέσως. Το κουμπί «Ερωτήσεις» εμφανίζει συνολική εικόνα όλων των ερωτήσεων με χρωματική ένδειξη, ώστε να βλέπετε με μια ματιά ποιες έχετε απαντήσει, ποιες όχι και ποιες έχετε σημειώσει, και να μεταβαίνετε απευθείας σε όποια επιθυμείτε.</string>
+    <string name="about_creator_title">Ο δημιουργός</string>
+    <string name="about_creator_story_text">Η εφαρμογή φτιάχτηκε από τον Νίκο Ξαπλαντέρη. Πριν γίνω προγραμματιστής, ήμουν ο ίδιος χειριστής μηχανημάτων — έδωσα αυτές τις εξετάσεις και ξέρω από πρώτο χέρι πόσο βοηθάει να έχεις ένα καλό εργαλείο εξάσκησης. Σπούδασα Πληροφορική και δουλεύω σήμερα ως προγραμματιστής λογισμικού. Αυτή η εφαρμογή είναι ένας συνδυασμός και των δύο κόσμων.</string>
+    <string name="about_contact_title">Επικοινωνία</string>
+    <string name="about_contact_email_label">Email</string>
+    <string name="about_contact_linkedin_label">LinkedIn</string>
+    <string name="about_email_subject">Σχετικά με την εφαρμογή Εξάσκηση Χειριστών Μηχανημάτων</string>
+    <string name="about_email_app_not_found">Δεν βρέθηκε εφαρμογή email.</string>
+    <string name="about_link_app_not_found">Δεν βρέθηκε εφαρμογή για το άνοιγμα του συνδέσμου.</string>
+</resources>
