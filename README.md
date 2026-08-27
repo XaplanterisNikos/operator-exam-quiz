@@ -2,19 +2,29 @@
 
 [🇬🇧 English](README.md) | [🇬🇷 Ελληνικά](README.el.md)
 
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?logo=jetpackcompose&logoColor=white)
+![Material 3](https://img.shields.io/badge/Material%203-757575?logo=materialdesign&logoColor=white)
+![Android](https://img.shields.io/badge/Android-7.0%2B-3DDC84?logo=android&logoColor=white)
+![Room](https://img.shields.io/badge/Room-DB-4479A1)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
 Android app · Kotlin & Jetpack Compose · Practice app for the Greek heavy machinery operator ("χειριστής μηχανημάτων έργου") professional license exam.
 
-<!--
-  Add 2-3 screenshots of the app here (HomeScreen, Exam, Results) once ready.
-  Example:
-  <p align="center">
-    <img src="docs/screenshot_home.png" width="220" />
-    <img src="docs/screenshot_exam.png" width="220" />
-    <img src="docs/screenshot_results.png" width="220" />
-  </p>
--->
+<!-- Once published, replace PLAY_STORE_URL below with the real link. -->
+<p align="center">
+  <a href="PLAY_STORE_URL">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="200" alt="Get it on Google Play" />
+  </a>
+</p>
 
-<!-- Add the Google Play badge/link here once the app is published. -->
+## Screenshots
+
+<p align="center">
+  <img src="docs/Screenshot_1.png" width="240" alt="Home screen" />
+  <img src="docs/Screenshot_2.png" width="240" alt="Exam screen" />
+  <img src="docs/Screenshot_3.png" width="240" alt="Results screen" />
+</p>
 
 ## About the app
 
