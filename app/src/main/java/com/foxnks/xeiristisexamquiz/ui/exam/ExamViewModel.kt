@@ -21,19 +21,32 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/**
+ * The user's answer to a single exam question, plus whether it's flagged for review.
+ * Η απάντηση του χρήστη σε μία ερώτηση του τεστ, μαζί με το αν είναι σημειωμένη για
+ * επανέλεγχο.
+ */
 data class ExamAnswerState(
     val selectedOptionIds: Set<String> = emptySet(),
     val isFlaggedForReview: Boolean = false
 )
 
+/**
+ * Everything the exam screen needs to draw itself.
+ * Όλα όσα χρειάζεται η οθόνη τεστ για να ζωγραφιστεί.
+ */
 data class ExamUiState(
     val questions: List<Question> = emptyList(),
     val currentIndex: Int = 0,
     val answers: Map<String, ExamAnswerState> = emptyMap(),
-    // Ερωτήσεις που ο χρήστης έχει δει έστω μία φορά (έγινε πλοήγηση σ' αυτές).
-    // Χρειάζεται ξεχωριστά από το `answers`, γιατί μια ερώτηση χωρίς καταχώρηση εκεί
-    // μπορεί να σημαίνει είτε "δεν την είδε ποτέ" (λευκή/ουδέτερη στο grid) είτε
-    // "την είδε αλλά δεν απάντησε" (κόκκινη) - χωρίς αυτό το σύνολο δεν ξεχωρίζουν.
+    // Questions the user has seen at least once (navigated to). Needed separately from
+    // `answers`, because a question with no entry there could mean either "never seen"
+    // (white/neutral in the grid) or "seen but left unanswered" (red) - without this set
+    // the two cases can't be told apart.
+    // Ερωτήσεις που ο χρήστης έχει δει έστω μία φορά (έγινε πλοήγηση σ' αυτές). Χρειάζεται
+    // ξεχωριστά από το `answers`, γιατί μια ερώτηση χωρίς καταχώρηση εκεί μπορεί να
+    // σημαίνει είτε "δεν την είδε ποτέ" (λευκή/ουδέτερη στο grid) είτε "την είδε αλλά δεν
+    // απάντησε" (κόκκινη) - χωρίς αυτό το σύνολο δεν ξεχωρίζουν.
     val visitedQuestionIds: Set<String> = emptySet(),
     val remainingSeconds: Int = 0,
     val totalTimeSeconds: Int = 0,
@@ -41,6 +54,15 @@ data class ExamUiState(
     val errorMessage: String? = null
 )
 
+/**
+ * Drives the final-exam screen: generates (or restores) the question set, runs the
+ * background-resilient timer, tracks answers/flags/visited questions, persists progress on
+ * every change, and submits the attempt (manually or on time-out).
+ * Οδηγεί την οθόνη τελικού τεστ: δημιουργεί (ή επαναφέρει) το σύνολο ερωτήσεων, τρέχει το
+ * χρονόμετρο ανθεκτικό σε background, παρακολουθεί απαντήσεις/flags/επισκεφθείσες
+ * ερωτήσεις, αποθηκεύει την πρόοδο σε κάθε αλλαγή, και υποβάλλει την απόπειρα (χειροκίνητα
+ * ή αυτόματα με λήξη χρόνου).
+ */
 class ExamViewModel(
     private val questionRepository: QuestionRepository,
     private val examConfigRepository: ExamConfigRepository,
@@ -56,6 +78,12 @@ class ExamViewModel(
 
     private var timerJob: Job? = null
 
+    // THE SOURCE OF TRUTH for the remaining time. `remainingSeconds` in ExamUiState is
+    // just a display value, refreshed every second - it is ALWAYS computed from here,
+    // never by decrementing. We use SystemClock.elapsedRealtime() instead of
+    // System.currentTimeMillis(), because: (a) it isn't affected if the user changes the
+    // device's clock, and (b) it keeps counting normally while the device is asleep/
+    // screen-off - exactly the behavior we want for an exam timer.
     // Η ΠΗΓΗ ΑΛΗΘΕΙΑΣ για τον υπόλοιπο χρόνο. Το `remainingSeconds` στο ExamUiState είναι
     // απλά μια τιμή για εμφάνιση, ανανεωμένη κάθε δευτερόλεπτο - υπολογίζεται ΠΑΝΤΑ από
     // εδώ, ποτέ με decrement. Χρησιμοποιούμε SystemClock.elapsedRealtime() κι όχι
@@ -64,6 +92,12 @@ class ExamViewModel(
     // σε sleep/screen-off - ακριβώς η συμπεριφορά που θέλουμε για ένα χρονόμετρο εξέτασης.
     private var examStartElapsedRealtime: Long = 0L
 
+    // init runs once, immediately when the ViewModel is created - the very first thing
+    // this screen does is decide: is there an exam already in progress to restore, or do
+    // we start a brand-new one?
+    // Το init τρέχει μία φορά, αμέσως μόλις δημιουργηθεί το ViewModel - το πρώτο πράγμα
+    // που κάνει αυτή η οθόνη είναι να αποφασίσει: υπάρχει ήδη τεστ σε εξέλιξη προς
+    // επαναφορά, ή ξεκινάμε ολοκαίνουριο;
     init {
         val persisted = examStateRepository.load()
         if (persisted != null) {
@@ -83,6 +117,7 @@ class ExamViewModel(
                 questions = questions,
                 remainingSeconds = totalTimeSeconds,
                 totalTimeSeconds = totalTimeSeconds,
+                // The first question is already visible as soon as the exam opens.
                 // Η πρώτη ερώτηση είναι ήδη ορατή μόλις ανοίξει το τεστ.
                 visitedQuestionIds = questions.firstOrNull()?.let { setOf(it.id) } ?: emptySet()
             )
@@ -94,6 +129,10 @@ class ExamViewModel(
     }
 
     /**
+     * Rebuilds the exact same exam attempt (same questions/order, answers, flags, visited)
+     * after the process was killed or the user simply returns to the app. If time has
+     * already run out while the app was backgrounded/killed, immediately auto-submits with
+     * whatever answers exist, exactly as if the timer had run out live.
      * Ξαναφτιάχνει ακριβώς την ίδια απόπειρα τεστ (ίδιες ερωτήσεις/σειρά, απαντήσεις,
      * flags, visited) μετά από kill της διεργασίας ή απλή επιστροφή στην εφαρμογή. Αν ο
      * χρόνος έχει ήδη λήξει όσο η εφαρμογή ήταν στο background/killed, κάνει αμέσως
@@ -121,12 +160,26 @@ class ExamViewModel(
         }
     }
 
+    // The actual time-remaining calculation: total time minus however long has elapsed in
+    // real device time since the exam started - not decremented, always recomputed from
+    // these two fixed points. coerceIn clamps the result between 0 and the total, so it
+    // never goes negative or above the original limit.
+    // Ο πραγματικός υπολογισμός του υπόλοιπου χρόνου: συνολικός χρόνος μείον όσος
+    // πραγματικός χρόνος συσκευής έχει περάσει από την εκκίνηση του τεστ - όχι μείωση με
+    // decrement, πάντα επανυπολογισμός από αυτά τα δύο σταθερά σημεία. Το coerceIn κρατάει
+    // το αποτέλεσμα ανάμεσα σε 0 και το σύνολο, ώστε ποτέ να μη γίνει αρνητικό ή να
+    // ξεπεράσει το αρχικό όριο.
     private fun remainingSecondsSince(startElapsedRealtime: Long, totalTimeSeconds: Int): Int {
         val elapsedSeconds = (SystemClock.elapsedRealtime() - startElapsedRealtime) / 1000
         return (totalTimeSeconds - elapsedSeconds).coerceIn(0, totalTimeSeconds.toLong()).toInt()
     }
 
     /**
+     * Saves the "exam in progress" so it can be rebuilt if the process gets killed. Called
+     * on every meaningful change (new answer, flag, question change) and NOT only at the
+     * end: the process can be terminated without warning at ANY moment (e.g. Android kills
+     * it for memory while the user is in another app), so there is no safe point to wait
+     * for other than "immediately after every change".
      * Αποθηκεύει το "τεστ σε εξέλιξη" ώστε να μπορεί να ξαναφτιαχτεί αν σκοτωθεί η
      * διεργασία. Καλείται σε κάθε σημαντική αλλαγή (νέα απάντηση, flag, αλλαγή ερώτησης)
      * κι ΟΧΙ μόνο στο τέλος: η διεργασία μπορεί να τερματιστεί απροειδοποίητα ΟΠΟΙΑΔΗΠΟΤΕ
@@ -150,6 +203,15 @@ class ExamViewModel(
         )
     }
 
+    // The visible "ticking" loop: once a second, recompute the remaining time from
+    // elapsedRealtime (never trust a running total) and push it into the UI state. If time
+    // runs out, submit automatically and stop the loop. viewModelScope ties this coroutine
+    // to the ViewModel's own lifetime - it's cancelled automatically in onCleared() below.
+    // Ο ορατός "βηματισμός" (tick): μία φορά το δευτερόλεπτο, επανυπολογίζει τον υπόλοιπο
+    // χρόνο από το elapsedRealtime (ποτέ να μην εμπιστεύεσαι ένα "τρέχον σύνολο") και τον
+    // στέλνει στο UI state. Αν λήξει ο χρόνος, υποβάλλει αυτόματα και σταματάει τον βρόχο.
+    // Το viewModelScope δένει αυτή την coroutine με τη ζωή του ίδιου του ViewModel - ακυρώνεται
+    // αυτόματα στο onCleared() παρακάτω.
     private fun startTimer() {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
@@ -168,6 +230,9 @@ class ExamViewModel(
     fun goToQuestion(index: Int) {
         val state = _uiState.value
         if (index in state.questions.indices) {
+            // Mark the destination question as "visited" the moment the user navigates to
+            // it - this way the question grid knows it's no longer "white" even if it ends
+            // up unanswered.
             // Μαρκάρουμε την ερώτηση-προορισμό ως "visited" τη στιγμή που ο χρήστης
             // πλοηγείται σ' αυτήν - έτσι το grid ερωτήσεων ξέρει ότι δεν είναι πια
             // "λευκή" ακόμα κι αν μείνει τελικά αναπάντητη.
@@ -221,6 +286,9 @@ class ExamViewModel(
         if (state.isSubmitted) return
         timerJob?.cancel()
         _uiState.value = state.copy(isSubmitted = true)
+        // The exam is over (manually or auto-submitted on time-out) - there is no longer an
+        // "exam in progress" to restore, so the next time ExamScreen opens it must always
+        // start a fresh exam.
         // Το τεστ ολοκληρώθηκε (χειροκίνητα ή αυτόματα από λήξη χρόνου) - δεν υπάρχει πια
         // "τεστ σε εξέλιξη" προς επαναφορά, οπότε η επόμενη είσοδος στο ExamScreen πρέπει
         // να ξεκινάει πάντα φρέσκο τεστ.
@@ -242,15 +310,22 @@ class ExamViewModel(
     }
 
     /**
+     * Called when the user confirms exiting an in-progress exam without finishing it. We
+     * stop the timer FIRST (before navigating back at all), because otherwise there's a
+     * race condition: if the timer's tick happens to fire at the same moment, it would call
+     * submitExam() and save to history an exam the user just cancelled. We also clear the
+     * saved "in progress" state - exactly like after a normal submission - so the next time
+     * ExamScreen opens it does NOT try to resume this cancelled exam. We don't touch
+     * ProgressRepository: the exam is treated as if it never happened, and must not appear
+     * in the history.
      * Καλείται όταν ο χρήστης επιβεβαιώνει έξοδο από τεστ σε εξέλιξη, χωρίς να το
-     * ολοκληρώσει. Σταματάμε ΠΡΩΤΑ το χρονόμετρο (πριν καν γίνει η πλοήγηση προς τα
-     * πίσω) γιατί αλλιώς υπάρχει race condition: αν το tick του timer προλάβει να
-     * τρέξει την ίδια στιγμή, θα καλούσε submitExam() και θα αποθήκευε στο ιστορικό
-     * ένα τεστ που ο χρήστης μόλις ακύρωσε. Καθαρίζουμε επίσης την αποθηκευμένη
-     * κατάσταση "σε εξέλιξη" - ακριβώς όπως και μετά από κανονική υποβολή - ώστε η
-     * επόμενη είσοδος στο ExamScreen να ΜΗΝ προσπαθήσει να συνεχίσει αυτό το
-     * ακυρωμένο τεστ. Δεν αγγίζουμε το ProgressRepository: το τεστ θεωρείται σαν να
-     * μην έγινε ποτέ, δεν πρέπει να εμφανιστεί στο ιστορικό.
+     * ολοκληρώσει. Σταματάμε ΠΡΩΤΑ το χρονόμετρο (πριν καν γίνει η πλοήγηση προς τα πίσω)
+     * γιατί αλλιώς υπάρχει race condition: αν το tick του timer προλάβει να τρέξει την ίδια
+     * στιγμή, θα καλούσε submitExam() και θα αποθήκευε στο ιστορικό ένα τεστ που ο χρήστης
+     * μόλις ακύρωσε. Καθαρίζουμε επίσης την αποθηκευμένη κατάσταση "σε εξέλιξη" - ακριβώς
+     * όπως και μετά από κανονική υποβολή - ώστε η επόμενη είσοδος στο ExamScreen να ΜΗΝ
+     * προσπαθήσει να συνεχίσει αυτό το ακυρωμένο τεστ. Δεν αγγίζουμε το ProgressRepository:
+     * το τεστ θεωρείται σαν να μην έγινε ποτέ, δεν πρέπει να εμφανιστεί στο ιστορικό.
      */
     fun cancelExam() {
         timerJob?.cancel()
@@ -263,6 +338,13 @@ class ExamViewModel(
         return selected == correctOptionIds
     }
 
+    // Called automatically by the Android lifecycle system when this ViewModel is about to
+    // be destroyed (e.g. the whole EXAM_GRAPH is popped off the back stack). Cancelling the
+    // timer here prevents it from leaking and continuing to run after nobody needs it.
+    // Καλείται αυτόματα από το σύστημα lifecycle του Android όταν αυτό το ViewModel
+    // πρόκειται να καταστραφεί (π.χ. αφαιρείται όλο το EXAM_GRAPH από τη στοίβα). Το
+    // ακύρωμα του χρονομέτρου εδώ αποτρέπει να "διαρρεύσει" και να συνεχίσει να τρέχει
+    // αφού πια κανείς δεν το χρειάζεται.
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()

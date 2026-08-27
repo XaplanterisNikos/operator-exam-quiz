@@ -25,6 +25,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * Shows past exam attempts, most recent first, or an empty-state message if there are none
+ * yet.
+ * Δείχνει τις προηγούμενες απόπειρες τεστ, πιο πρόσφατη πρώτη, ή μήνυμα κενής κατάστασης
+ * αν δεν υπάρχει ακόμα καμία.
+ */
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
@@ -96,6 +102,10 @@ private fun ExamAttemptRow(attempt: ExamAttemptEntity) {
     )
 }
 
+// Explicit Greek locale (not the device's default), so the date always formats the same
+// way regardless of what language the user's phone is set to.
+// Ρητή ελληνική τοπικότητα (locale) (όχι η προεπιλεγμένη της συσκευής), ώστε η ημερομηνία
+// να μορφοποιείται πάντα με τον ίδιο τρόπο ανεξάρτητα από τη γλώσσα της συσκευής.
 private val greekLocale: Locale = Locale.Builder().setLanguage("el").setRegion("GR").build()
 
 private fun formatAttemptDate(timestampMillis: Long): String {

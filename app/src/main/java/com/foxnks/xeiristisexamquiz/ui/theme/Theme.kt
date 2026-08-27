@@ -11,12 +11,20 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
+/**
+ * Color scheme for dark mode, based on the "80" tones.
+ * Σχήμα χρωμάτων για σκούρο θέμα (dark mode), βασισμένο στις "80" αποχρώσεις.
+ */
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
     secondary = PurpleGrey80,
     tertiary = Pink80
 )
 
+/**
+ * Color scheme for light mode, based on the "40" tones.
+ * Σχήμα χρωμάτων για ανοιχτό θέμα (light mode), βασισμένο στις "40" αποχρώσεις.
+ */
 private val LightColorScheme = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
@@ -33,6 +41,25 @@ private val LightColorScheme = lightColorScheme(
     */
 )
 
+/**
+ * Wraps the whole app and gives it Material3 colors/typography. Called once at the top,
+ * in MainActivity.
+ *
+ * Color scheme selection:
+ * 1. If dynamicColor=true AND the device is Android 12+ (S): uses colors derived from the
+ *    user's wallpaper (Material You) - different per device/user.
+ * 2. Otherwise: uses the fixed DarkColorScheme or LightColorScheme above, depending on
+ *    whether the device is in dark mode.
+ * "Τυλίγει" όλη την εφαρμογή και της δίνει χρώματα/γραμματοσειρές Material3. Καλείται μία
+ * φορά στην κορυφή, στο MainActivity.
+ *
+ * Επιλογή σχήματος χρωμάτων:
+ * 1. Αν dynamicColor=true ΚΑΙ η συσκευή είναι Android 12+ (S): χρησιμοποιεί τα χρώματα του
+ *    wallpaper του χρήστη (Material You) - διαφορετικό ανά συσκευή/χρήστη.
+ * 2. Αλλιώς: χρησιμοποιεί το σταθερό DarkColorScheme ή LightColorScheme παραπάνω, ανάλογα
+ *    με το αν η συσκευή είναι σε dark mode.
+ *
+ */
 @Composable
 fun XeiristisExamQuizTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

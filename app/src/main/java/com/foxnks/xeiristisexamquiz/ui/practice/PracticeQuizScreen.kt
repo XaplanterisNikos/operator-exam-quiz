@@ -24,6 +24,12 @@ import com.foxnks.xeiristisexamquiz.R
 import com.foxnks.xeiristisexamquiz.ui.common.BackTopAppBar
 import com.foxnks.xeiristisexamquiz.ui.common.OptionRow
 
+/**
+ * Practice mode for a single chapter: one question at a time, with immediate feedback and
+ * explanation after checking an answer.
+ * Εξάσκηση για ένα κεφάλαιο: μία ερώτηση τη φορά, με άμεση ανατροφοδότηση και επεξήγηση
+ * μόλις ελεγχθεί μια απάντηση.
+ */
 @Composable
 fun PracticeQuizScreen(
     viewModel: PracticeQuizViewModel,
@@ -33,16 +39,35 @@ fun PracticeQuizScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // LaunchedEffect runs a side effect (here: navigating away) in response to a state
+    // change, rather than during composition itself - composables must stay "pure"
+    // (side-effect free) except inside effect blocks like this one. Keyed on
+    // isChapterFinished, so it only re-runs when THAT specific value changes.
+    // Το LaunchedEffect εκτελεί μια παρενέργεια (εδώ: αποχώρηση από την οθόνη) ως
+    // απάντηση σε αλλαγή κατάστασης, αντί κατά τη σύνθεση (composition) του UI - τα
+    // composables πρέπει να παραμένουν "καθαρά" (χωρίς παρενέργειες) εκτός από μέσα σε
+    // blocks όπως αυτό. Κλειδωμένο στο isChapterFinished, άρα ξανατρέχει μόνο όταν
+    // αλλάξει ΑΥΤΗ η συγκεκριμένη τιμή.
     LaunchedEffect(state.isChapterFinished) {
         if (state.isChapterFinished) onFinished()
     }
 
+    // Early return: if there's no current question (e.g. right at the "finished" moment,
+    // before LaunchedEffect has navigated away yet), draw nothing instead of crashing.
+    // Πρόωρη επιστροφή: αν δεν υπάρχει τρέχουσα ερώτηση (π.χ. ακριβώς τη στιγμή του
+    // "ολοκληρώθηκε", πριν προλάβει το LaunchedEffect να πλοηγηθεί μακριά), μη ζωγραφίζεις
+    // τίποτα αντί να κρασάρεις.
     val question = state.question ?: return
 
     Scaffold(
         modifier = modifier,
         topBar = { BackTopAppBar(title = state.chapterTitle, onBackClick = onBackClick) }
     ) { innerPadding ->
+        // Scrollable zone (question text + options + explanation) takes all space
+        // except what the bottom button needs - same weight() trick as HomeScreen.
+        // Η κυλιόμενη ζώνη (κείμενο ερώτησης + επιλογές + επεξήγηση) παίρνει όλο τον
+        // χώρο εκτός από όσο χρειάζεται το κάτω κουμπί - ίδιο κόλπο weight() με το
+        // HomeScreen.
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -107,6 +132,11 @@ fun PracticeQuizScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Bottom button swaps role depending on state: "check answer" before checking,
+            // then "next question" (or "finish chapter" on the last one) after.
+            // Το κάτω κουμπί αλλάζει ρόλο ανάλογα με την κατάσταση: "έλεγχος απάντησης"
+            // πριν τον έλεγχο, μετά "επόμενη ερώτηση" (ή "ολοκλήρωση κεφαλαίου" στην
+            // τελευταία).
             if (!state.isAnswerChecked) {
                 Button(
                     onClick = viewModel::checkAnswer,

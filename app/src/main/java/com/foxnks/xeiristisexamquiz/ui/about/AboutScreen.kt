@@ -36,6 +36,12 @@ import com.foxnks.xeiristisexamquiz.ui.common.BackTopAppBar
 private const val CONTACT_EMAIL = "xaplanterisnikos@gmail.com"
 private const val LINKEDIN_URL = "https://www.linkedin.com/in/nick-xaplanteris/"
 
+/**
+ * "About" screen: what the app is for, help text for the flag/question-navigator buttons,
+ * the creator's own story, and contact links (email, LinkedIn).
+ * Οθόνη "Σχετικά": τι κάνει η εφαρμογή, κείμενο βοήθειας για τα κουμπιά flag/question-
+ * navigator, η ιστορία του δημιουργού, και σύνδεσμοι επικοινωνίας (email, LinkedIn).
+ */
 @Composable
 fun AboutScreen(
     onBackClick: () -> Unit,
@@ -119,6 +125,17 @@ private fun AboutSectionCard(title: String, body: String) {
     }
 }
 
+/**
+ * Opens the device's email app with the contact address pre-filled, via an explicit
+ * ACTION_SENDTO intent (not ACTION_SEND) so only email apps - not any generic
+ * share-capable app - are offered as a target. Falls back to a Toast if no email app is
+ * installed, instead of crashing with an unhandled ActivityNotFoundException.
+ * Ανοίγει την εφαρμογή email της συσκευής με προσυμπληρωμένη τη διεύθυνση επικοινωνίας,
+ * μέσω ρητού intent ACTION_SENDTO (όχι ACTION_SEND) ώστε να προτείνονται μόνο εφαρμογές
+ * email - όχι οποιαδήποτε γενική εφαρμογή διαμοιρασμού. Επιστρέφει σε Toast αν δεν υπάρχει
+ * εγκατεστημένη εφαρμογή email, αντί να κρασάρει με ένα ανεπεξέργαστο
+ * ActivityNotFoundException.
+ */
 private fun sendEmail(context: Context) {
     val intent = Intent(Intent.ACTION_SENDTO, "mailto:$CONTACT_EMAIL".toUri()).apply {
         putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.about_email_subject))

@@ -59,6 +59,13 @@ import com.foxnks.xeiristisexamquiz.data.model.Question
 import com.foxnks.xeiristisexamquiz.ui.common.OptionRow
 import com.foxnks.xeiristisexamquiz.ui.theme.Purple40
 
+/**
+ * The final-exam screen: one question at a time, a countdown timer, flag-for-review, the
+ * question-navigator grid, and confirmation dialogs for both submitting and exiting.
+ * Η οθόνη τελικού τεστ: μία ερώτηση τη φορά, χρονόμετρο αντίστροφης μέτρησης, σημείωση για
+ * επανέλεγχο, το grid πλοήγησης ερωτήσεων, και dialogs επιβεβαίωσης τόσο για υποβολή όσο
+ * και για έξοδο.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExamScreen(
@@ -68,10 +75,21 @@ fun ExamScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    // remember { mutableStateOf(...) }: local UI-only state (which dialog is open) that
+    // doesn't need to live in the ViewModel, because it's purely cosmetic and doesn't need
+    // to survive process death - it resets to false naturally on a fresh composition.
+    // remember { mutableStateOf(...) }: τοπική κατάσταση μόνο-UI (ποιο dialog είναι
+    // ανοιχτό) που δεν χρειάζεται να ζει στο ViewModel, γιατί είναι καθαρά αισθητική και
+    // δεν χρειάζεται να επιβιώσει σε kill διεργασίας - μηδενίζεται φυσιολογικά σε νέα
+    // composition.
     var showSubmitConfirmation by remember { mutableStateOf(false) }
     var showQuestionGridSheet by remember { mutableStateOf(false) }
     var showExitConfirmDialog by remember { mutableStateOf(false) }
 
+    /// While this screen is open (i.e. while an exam is running) we keep the device screen
+    // awake, so it doesn't lock itself while the user is being examined. Resetting to false
+    // in onDispose is essential - otherwise keepScreenOn would stay active even after
+    // leaving ExamScreen.
     // Όσο είναι ανοιχτή αυτή η οθόνη (δηλαδή όσο τρέχει ένα τεστ) κρατάμε την οθόνη της
     // συσκευής ξύπνια, ώστε να μην κλειδώνει μόνη της ενόσω ο χρήστης εξετάζεται. Η
     // επαναφορά σε false στο onDispose είναι απαραίτητη - διαφορετικά το keepScreenOn θα
@@ -82,9 +100,12 @@ fun ExamScreen(
         onDispose { view.keepScreenOn = false }
     }
 
+    // Intercepts BOTH the system back gesture/button, not just the TopAppBar's arrow -
+    // otherwise the user could bypass the confirmation dialog and accidentally lose the
+    // exam with a plain back gesture.
     // Πιάνουμε ΚΑΙ το system back (gesture/κουμπί συσκευής), όχι μόνο το βελάκι της
-    // TopAppBar - αλλιώς ο χρήστης θα μπορούσε να προσπεράσει το dialog επιβεβαίωσης
-    // και να χάσει το τεστ κατά λάθος με ένα απλό back gesture.
+    // TopAppBar - αλλιώς ο χρήστης θα μπορούσε να προσπεράσει το dialog επιβεβαίωσης και
+    // να χάσει το τεστ κατά λάθος με ένα απλό back gesture.
     BackHandler(enabled = true) {
         showExitConfirmDialog = true
     }
@@ -93,6 +114,11 @@ fun ExamScreen(
         if (state.isSubmitted) onSubmitted()
     }
 
+    // Question-bank misconfiguration guard: shows a dedicated error screen instead of
+    // crashing or silently showing a broken exam (see ExamGenerationException).
+    // Ασφαλιστική δικλείδα για λάθος ρυθμισμένη τράπεζα ερωτήσεων: δείχνει μια δική της
+    // οθόνη σφάλματος αντί να κρασάρει ή να δείχνει σιωπηλά ένα χαλασμένο τεστ (βλέπε
+    // ExamGenerationException).
     if (state.errorMessage != null) {
         Scaffold(
             modifier = modifier,
@@ -111,6 +137,11 @@ fun ExamScreen(
         return
     }
 
+    // Nothing to draw yet (still loading) or already submitted (LaunchedEffect above is
+    // about to navigate away) - draw nothing rather than an inconsistent screen.
+    // Δεν υπάρχει ακόμα τίποτα να ζωγραφιστεί (φορτώνει ακόμα) ή έχει ήδη υποβληθεί (το
+    // LaunchedEffect παραπάνω πάει να πλοηγηθεί μακριά) - μη ζωγραφίζεις τίποτα αντί για
+    // ασυνεπή οθόνη.
     if (state.questions.isEmpty() || state.isSubmitted) return
 
     val question = state.questions[state.currentIndex]
@@ -130,6 +161,9 @@ fun ExamScreen(
                     }
                 },
                 actions = {
+                    // Countdown timer, turning red in the last minute as a visual warning.
+                    // Χρονόμετρο αντίστροφης μέτρησης, γίνεται κόκκινο το τελευταίο λεπτό
+                    // σαν οπτική προειδοποίηση.
                     Text(
                         text = formatRemainingTime(state.remainingSeconds),
                         style = MaterialTheme.typography.titleMedium,
@@ -168,9 +202,12 @@ fun ExamScreen(
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.weight(1f)
                     )
+                    // "Ερωτήσεις" (opens the overview grid) next to "Επανέλεγχος", with the
+                    // same button style (FilterChip) so they match visually. No meaningful
+                    // "selected" state here - it's simply an action button.
                     // Το "Ερωτήσεις" (άνοιγμα του grid επισκόπησης) δίπλα στο "Επανέλεγχος",
-                    // με το ίδιο στυλ κουμπιού (FilterChip) ώστε να ταιριάζουν οπτικά.
-                    // Δεν έχει νόημα "selected" state εδώ - είναι απλά ένα κουμπί ενέργειας.
+                    // με το ίδιο στυλ κουμπιού (FilterChip) ώστε να ταιριάζουν οπτικά. Δεν
+                    // έχει νόημα "selected" state εδώ - είναι απλά ένα κουμπί ενέργειας.
                     FilterChip(
                         selected = false,
                         onClick = { showQuestionGridSheet = true },
@@ -192,6 +229,13 @@ fun ExamScreen(
                 Text(text = question.text, style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // isAnswerChecked = false, isCorrectOption = false always here: unlike
+                // practice mode, the exam never reveals correctness mid-attempt - OptionRow
+                // just acts as a plain selectable row until submission.
+                // isAnswerChecked = false, isCorrectOption = false πάντα εδώ: σε αντίθεση
+                // με την εξάσκηση, το τεστ ποτέ δεν αποκαλύπτει την ορθότητα κατά τη
+                // διάρκεια - το OptionRow λειτουργεί απλά σαν κοινή επιλέξιμη γραμμή μέχρι
+                // την υποβολή.
                 question.options.forEach { option ->
                     OptionRow(
                         text = option.text,
@@ -273,9 +317,13 @@ fun ExamScreen(
             },
             dismissButton = {
                 Row {
+                    // Instead of jumping straight to the first flagged question, opens the
+                    // same question grid so the user sees the whole picture of the exam
+                    // (answered/unanswered/flagged) and picks where to go themselves.
                     // Αντί να πηδάει κατευθείαν στην πρώτη σημειωμένη ερώτηση, ανοίγει το
                     // ίδιο grid ερωτήσεων ώστε ο χρήστης να βλέπει όλη την εικόνα του τεστ
-                    // (απαντημένες/αναπάντητες/σημειωμένες) και να διαλέξει μόνος του πού θα πάει.
+                    // (απαντημένες/αναπάντητες/σημειωμένες) και να διαλέξει μόνος του πού
+                    // θα πάει.
                     TextButton(onClick = {
                         showSubmitConfirmation = false
                         showQuestionGridSheet = true
@@ -313,10 +361,14 @@ fun ExamScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showExitConfirmDialog = false
+                    // Clears the saved "in progress" state and stops the timer BEFORE we
+                    // leave the screen, so the cancelled exam doesn't get reloaded next
+                    // time and doesn't get a chance to be saved to history as if it had
+                    // been submitted normally.
                     // Καθαρίζει την αποθηκευμένη κατάσταση "σε εξέλιξη" και σταματάει το
                     // χρονόμετρο ΠΡΙΝ φύγουμε από την οθόνη, ώστε το ακυρωμένο τεστ να μην
-                    // ξαναφορτωθεί την επόμενη φορά και να μην προλάβει να αποθηκευτεί
-                    // σαν κανονική υποβολή στο ιστορικό.
+                    // ξαναφορτωθεί την επόμενη φορά και να μην προλάβει να αποθηκευτεί σαν
+                    // κανονική υποβολή στο ιστορικό.
                     viewModel.cancelExam()
                     onExitClick()
                 }) {
@@ -332,11 +384,13 @@ fun ExamScreen(
     }
 }
 
-/**
- * Η κατάσταση μιας ερώτησης μέσα στο grid πλοήγησης. Η σειρά των branches παρακάτω
- * (στο [questionStatus]) καθορίζει και την προτεραιότητα χρωματισμού: το "σημειωμένη
- * για επανέλεγχο" νικάει πάντα, ακόμα κι αν η ερώτηση έχει ήδη απαντηθεί.
- */
+// Instead of jumping straight to the first flagged question, opens the
+// same question grid so the user sees the whole picture of the exam
+// (answered/unanswered/flagged) and picks where to go themselves.
+// Αντί να πηδάει κατευθείαν στην πρώτη σημειωμένη ερώτηση, ανοίγει το
+// ίδιο grid ερωτήσεων ώστε ο χρήστης να βλέπει όλη την εικόνα του τεστ
+// (απαντημένες/αναπάντητες/σημειωμένες) και να διαλέξει μόνος του πού
+// θα πάει.
 private enum class QuestionStatus { FLAGGED, ANSWERED, VISITED_UNANSWERED, NOT_VISITED }
 
 private fun questionStatus(
@@ -353,9 +407,12 @@ private fun questionStatus(
     }
 }
 
-// Πράσινο για "απαντημένη" - δεν υπάρχει έτοιμο σημασιολογικό πράσινο στο M3 color
-// scheme, οπότε ορίζεται εδώ τοπικά. Τα υπόλοιπα χρώματα αντλούνται από το ήδη
-// υπάρχον theme (Purple40 του brand, error/surfaceVariant του color scheme).
+// Green for "answered" - there's no ready-made semantic green in the M3 color scheme, so
+// it's defined here locally. The other colors are drawn from the existing theme (the
+// brand's Purple40, error/surfaceVariant from the color scheme).
+// Πράσινο για "απαντημένη" - δεν υπάρχει έτοιμο σημασιολογικό πράσινο στο M3 color scheme,
+// οπότε ορίζεται εδώ τοπικά. Τα υπόλοιπα χρώματα αντλούνται από το ήδη υπάρχον theme
+// (Purple40 του brand, error/surfaceVariant του color scheme).
 private val AnsweredGreen = Color(0xFF4CAF50)
 
 @Composable
@@ -366,6 +423,12 @@ private fun QuestionStatus.color(): Color = when (this) {
     QuestionStatus.NOT_VISITED -> MaterialTheme.colorScheme.surfaceVariant
 }
 
+/**
+ * Contents of the ModalBottomSheet: a color legend followed by an 8-column grid, one cell
+ * per question, tap to jump straight to it.
+ * Το περιεχόμενο του ModalBottomSheet: ένα χρωματικό υπόμνημα και μετά ένα grid 8 στηλών,
+ * ένα κουτάκι ανά ερώτηση, πάτημα για άμεση μετάβαση σε αυτήν.
+ */
 @Composable
 private fun QuestionNavigationSheetContent(
     questions: List<Question>,
@@ -383,6 +446,7 @@ private fun QuestionNavigationSheetContent(
         Text(text = stringResource(R.string.exam_questions_label), style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(12.dp))
 
+        // Color legend, so each cell's status is understandable at a glance.
         // Υπόμνημα χρωμάτων, ώστε η κατάσταση κάθε κουτακιού να είναι κατανοητή με μια ματιά.
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -413,6 +477,18 @@ private fun QuestionNavigationSheetContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Fixed(8): always exactly 8 columns regardless of screen width (cells just get
+        // narrower/wider) - simpler and more predictable here than an adaptive column
+        // count, given the sheet's own width is already constrained by the bottom sheet.
+        // heightIn(max = 400.dp) caps the grid's height so it never pushes the legend
+        // above it off-screen for exams with many questions - the grid scrolls internally
+        // instead.
+        // Fixed(8): πάντα ακριβώς 8 στήλες ανεξάρτητα από το πλάτος οθόνης (τα κουτάκια
+        // απλά στενεύουν/φαρδαίνουν) - απλούστερο και πιο προβλέψιμο εδώ από προσαρμοστικό
+        // αριθμό στηλών, δεδομένου ότι το πλάτος του sheet είναι ήδη περιορισμένο. Το
+        // heightIn(max = 400.dp) περιορίζει το ύψος του grid ώστε ποτέ να μη σπρώξει το
+        // υπόμνημα από πάνω εκτός οθόνης σε τεστ με πολλές ερωτήσεις - το grid κάνει
+        // scroll εσωτερικά αντ' αυτού.
         LazyVerticalGrid(
             columns = GridCells.Fixed(8),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -436,6 +512,8 @@ private fun QuestionNavigationSheetContent(
                         .clip(RoundedCornerShape(6.dp))
                         .background(cellColor)
                         .then(
+                            // Thin border around the cell for the question currently open,
+                            // so the user can see where they are.
                             // Λεπτό περίγραμμα γύρω από το κουτάκι της ερώτησης που είναι
                             // αυτή τη στιγμή ανοιχτή, ώστε ο χρήστης να βλέπει πού βρίσκεται.
                             if (isCurrent) {
@@ -471,7 +549,11 @@ private fun QuestionStatusLegendItem(color: Color, label: String, modifier: Modi
         Text(text = label, style = MaterialTheme.typography.bodySmall)
     }
 }
-
+/**
+ * Formats a countdown in seconds as "MM:SS" with zero-padding (e.g. 65 -> "01:05").
+ * Μορφοποιεί μια αντίστροφη μέτρηση σε δευτερόλεπτα ως "MM:SS" με μηδενικά γεμίσματος
+ * (π.χ. 65 -> "01:05").
+ */
 private fun formatRemainingTime(totalSeconds: Int): String {
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60

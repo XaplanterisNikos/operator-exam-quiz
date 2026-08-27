@@ -14,6 +14,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.foxnks.xeiristisexamquiz.R
 
+/**
+ * Generic full-screen error state: a title plus a specific [message], centered on screen.
+ * Used whenever a screen's data fails to load.
+ * Γενική οθόνη σφάλματος πλήρους οθόνης: ένας τίτλος και ένα συγκεκριμένο [message],
+ * κεντραρισμένα στην οθόνη. Χρησιμοποιείται όποτε αποτυγχάνει η φόρτωση δεδομένων μιας οθόνης.
+ */
 @Composable
 fun ErrorScreen(message: String, modifier: Modifier = Modifier) {
     Column(

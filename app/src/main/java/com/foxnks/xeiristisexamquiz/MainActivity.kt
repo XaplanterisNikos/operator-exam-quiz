@@ -30,6 +30,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
+/**
+ * The app's single Activity - everything else is Compose screens navigated within it (a
+ * standard modern-Android setup, no separate Activity per screen).
+ * Η μοναδική Activity της εφαρμογής - όλα τα υπόλοιπα είναι Compose οθόνες που
+ * πλοηγούνται μέσα σε αυτήν (στάνταρ σύγχρονη ρύθμιση Android, όχι ξεχωριστή Activity ανά
+ * οθόνη).
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,15 +47,22 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-/**
- * Loading/parsing the bundled question bank and opening the local database are both boundary
- * operations (file I/O, JSON parsing) that can fail on a corrupt or missing asset - hence the
- * explicit [Error] state instead of letting an exception crash the app at startup.
- */
-// Ελάχιστος χρόνος εμφάνισης του LoadingScreen, ώστε να μη "τρεμοπαίζει"
-// σαν flash όταν το question bank φορτώνει πιο γρήγορα απ' αυτό.
+// Minimum display time for LoadingScreen, so it doesn't "flash" briefly when the question
+// bank loads faster than this.
+// Ελάχιστος χρόνος εμφάνισης του LoadingScreen, ώστε να μη "τρεμοπαίζει" σαν flash όταν το
+// question bank φορτώνει πιο γρήγορα απ' αυτό.
 private const val MIN_LOADING_SCREEN_DURATION_MS = 2500L
 
+/**
+ * Loading/parsing the bundled question bank and opening the local database are both
+ * boundary operations (file I/O, JSON parsing) that can fail on a corrupt or missing asset
+ * - hence the explicit [Error] state instead of letting an exception crash the app at
+ * startup.
+ * Το φόρτωμα/parsing της ενσωματωμένης τράπεζας ερωτήσεων και το άνοιγμα της τοπικής
+ * βάσης είναι και τα δύο λειτουργίες ορίου (file I/O, JSON parsing) που μπορούν να
+ * αποτύχουν σε αλλοιωμένο ή απόν asset - εξ ου και η ρητή κατάσταση [Error] αντί να αφήσουμε
+ * ένα exception να κρασάρει την εφαρμογή στην εκκίνηση.
+ */
 private sealed interface AppInitState {
     data object Loading : AppInitState
     data class Error(val message: String) : AppInitState
@@ -68,9 +82,12 @@ private fun XeiristisExamQuizApp() {
 
     LaunchedEffect(Unit) {
         coroutineScope {
-            // Ξεκινάει ταυτόχρονα με το πραγματικό load· περιμένουμε στο τέλος όποιο
-            // από τα δύο τελειώσει τελευταίο, ώστε ένα γρήγορο load να μην κάνει flash
-            // το LoadingScreen, αλλά ένα αργό load να μην καθυστερήσει επιπλέον.
+            // Starts at the same time as the actual loading; we wait at the end for
+            // whichever of the two finishes last, so a fast load doesn't make the
+            // LoadingScreen flash, but a slow load isn't delayed any further.
+            // Ξεκινάει ταυτόχρονα με το πραγματικό load· περιμένουμε στο τέλος όποιο από
+            // τα δύο τελειώσει τελευταίο, ώστε ένα γρήγορο load να μην κάνει flash το
+            // LoadingScreen, αλλά ένα αργό load να μην καθυστερήσει επιπλέον.
             val minDurationJob = async { delay(MIN_LOADING_SCREEN_DURATION_MS) }
 
             val result = try {

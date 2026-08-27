@@ -12,8 +12,11 @@ import androidx.compose.ui.res.stringResource
 import com.foxnks.xeiristisexamquiz.R
 
 /**
- * A [TopAppBar] with a back arrow, used by every non-root screen so there is always an obvious
- * way back besides the system back gesture/button.
+ * A [TopAppBar] with a back arrow, used by every non-root screen so there is always an
+ * obvious way back besides the system back gesture/button.
+ * Μια [TopAppBar] με βέλος επιστροφής, που χρησιμοποιείται σε κάθε μη-αρχική οθόνη ώστε
+ * να υπάρχει πάντα εμφανής τρόπος επιστροφής, πέρα από τη χειρονομία/κουμπί "πίσω" του
+ * συστήματος.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

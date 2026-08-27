@@ -5,8 +5,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+/**
+ * Material3 typography styles for the app. We only override bodyLarge (the main body
+ * text style) - all other styles (titles, labels, etc.) fall back to Material3 defaults.
+ * Στυλ γραμματοσειράς Material3 για την εφαρμογή. Ορίζουμε μόνο το bodyLarge (το κύριο
+ * στυλ κειμένου) - όλα τα υπόλοιπα στυλ (τίτλοι, ετικέτες, κλπ) παίρνουν τις προεπιλογές
+ * του Material3.
+ */
 
-// Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,

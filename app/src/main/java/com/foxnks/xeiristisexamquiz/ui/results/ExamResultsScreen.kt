@@ -26,6 +26,18 @@ import com.foxnks.xeiristisexamquiz.R
 import com.foxnks.xeiristisexamquiz.data.model.Question
 import com.foxnks.xeiristisexamquiz.ui.exam.ExamViewModel
 
+/**
+ * Shows the exam score, pass/fail verdict, and every question the user got wrong along
+ * with the correct answer. Reuses the SAME [ExamViewModel] instance the exam itself used
+ * (see the EXAM_GRAPH design note in NavGraph.kt) - there is no separate "results"
+ * ViewModel, this screen just reads the already-submitted state and re-derives everything
+ * it needs from it.
+ * Δείχνει το σκορ του τεστ, το αποτέλεσμα επιτυχίας/αποτυχίας, και κάθε ερώτηση που
+ * απαντήθηκε λάθος μαζί με τη σωστή απάντηση. Επαναχρησιμοποιεί το ΙΔΙΟ instance
+ * [ExamViewModel] που χρησιμοποίησε το ίδιο το τεστ (βλέπε τη σχεδιαστική σημείωση
+ * EXAM_GRAPH στο NavGraph.kt) - δεν υπάρχει ξεχωριστό ViewModel "αποτελεσμάτων", αυτή η
+ * οθόνη απλά διαβάζει την ήδη-υποβληθείσα κατάσταση και ξαναπαράγει από αυτήν ό,τι χρειάζεται.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExamResultsScreen(
@@ -35,6 +47,11 @@ fun ExamResultsScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Nothing here is stored separately as "the result" - it's all recomputed on the spot
+    // from the same answers/questions the exam left in the ViewModel's state.
+    // Τίποτα εδώ δεν είναι αποθηκευμένο ξεχωριστά ως "το αποτέλεσμα" - όλα υπολογίζονται
+    // επιτόπου από τις ίδιες απαντήσεις/ερωτήσεις που άφησε το τεστ στην κατάσταση του
+    // ViewModel.
     val total = state.questions.size
     val correctCount = state.questions.count { viewModel.isAnswerCorrect(it) }
     val percent = if (total > 0) correctCount * 100f / total else 0f
@@ -101,6 +118,12 @@ fun ExamResultsScreen(
     }
 }
 
+/**
+ * One card per wrongly-answered question: shows every option, marking the correct one and
+ * (if different) the one the user actually picked.
+ * Μία κάρτα ανά λάθος απαντημένη ερώτηση: δείχνει κάθε επιλογή, σημειώνοντας τη σωστή και
+ * (αν είναι διαφορετική) αυτή που πραγματικά διάλεξε ο χρήστης.
+ */
 @Composable
 private fun WrongAnswerCard(question: Question, selectedOptionIds: Set<String>) {
     Surface(
