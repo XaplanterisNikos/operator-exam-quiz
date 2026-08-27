@@ -1,10 +1,12 @@
-# Εξάσκηση Χειριστών Μηχανημάτων
+# Heavy Machinery Operator — Exam Prep
 
-Android app · Kotlin & Jetpack Compose · Εξάσκηση για τις εξετάσεις επαγγελματικών αδειών χειριστών μηχανημάτων έργου (χειριστής μηχανημάτων έργου).
+[🇬🇧 English](README.md) | [🇬🇷 Ελληνικά](README.el.md)
+
+Android app · Kotlin & Jetpack Compose · Practice app for the Greek heavy machinery operator ("χειριστής μηχανημάτων έργου") professional license exam.
 
 <!--
-  Πρόσθεσε εδώ 2-3 screenshots της εφαρμογής (HomeScreen, Exam, Results) όταν είναι έτοιμα.
-  Παράδειγμα:
+  Add 2-3 screenshots of the app here (HomeScreen, Exam, Results) once ready.
+  Example:
   <p align="center">
     <img src="docs/screenshot_home.png" width="220" />
     <img src="docs/screenshot_exam.png" width="220" />
@@ -12,67 +14,69 @@ Android app · Kotlin & Jetpack Compose · Εξάσκηση για τις εξε
   </p>
 -->
 
-## Σχετικά με την εφαρμογή
+<!-- Add the Google Play badge/link here once the app is published. -->
 
-Η εφαρμογή αυτή δημιουργήθηκε για να βοηθήσει τους υποψήφιους χειριστές μηχανημάτων έργου στην προετοιμασία τους για τις θεωρητικές εξετάσεις πιστοποίησης. Μπορείτε να εξασκηθείτε κεφάλαιο προς κεφάλαιο, μαθαίνοντας τις σωστές απαντήσεις, και, όταν αισθάνεστε έτοιμοι, να δοκιμάσετε τις γνώσεις σας σε πλήρη προσομοίωση της πραγματικής εξέτασης, με χρονόμετρο και τις ίδιες συνθήκες βαθμολόγησης.
+## About the app
 
-## Χαρακτηριστικά
+This app was built to help candidates for the Greek heavy machinery operator license prepare for the theoretical certification exam. You can practice chapter by chapter, learning the correct answers as you go, and once you feel ready, test your knowledge in a full simulation of the real exam, with a timer and the same scoring conditions.
 
-**Εξάσκηση ανά κεφάλαιο** — 15 κεφάλαια ύλης, άμεση ανατροφοδότηση σε κάθε ερώτηση, με εμφάνιση της σωστής απάντησης όταν χρειάζεται.
+## Features
 
-**Τελικό Τεστ** — προσομοίωση πραγματικής εξέτασης: 80 ερωτήσεις με σταθερή κατανομή ανά κεφάλαιο (όχι τυχαία/αναλογική) από μια τράπεζα 448 ερωτήσεων, χρονόμετρο 90 λεπτών, όριο επιτυχίας 75% (60/80). Ερωτήσεις μονής και πολλαπλής σωστής απάντησης.
+**Practice by chapter** — 15 syllabus chapters, immediate feedback on every question, with the correct answer shown when needed.
 
-**Επανέλεγχος & πλοήγηση** — σημείωση ερωτήσεων "για επανέλεγχο" κατά τη διάρκεια του τεστ, και μια συνολική εικόνα όλων των ερωτήσεων (πλέγμα με χρωματική ένδειξη: απαντημένη / αναπάντητη / για επανέλεγχο / μη ορατή ακόμα) για γρήγορη πλοήγηση.
+**Final Exam** — a real exam simulation: 80 questions with a fixed (non-proportional) per-chapter distribution drawn from a bank of 448 questions, a 90-minute timer, and a 75% (60/80) pass threshold. Single- and multiple-correct-answer questions.
 
-**Ανθεκτικότητα** — το τεστ δεν χάνεται αν η εφαρμογή πάει σε background, κλειδώσει η οθόνη, ή τερματιστεί η διεργασία από το λειτουργικό· η πρόοδος και το χρονόμετρο συνεχίζουν σωστά όταν επιστρέψετε.
+**Review & navigation** — flag questions "for review" during the exam, plus a full overview of every question (a color-coded grid: answered / unanswered / flagged for review / not yet seen) for quick navigation.
 
-**Ιστορικό** — καταγραφή προηγούμενων απόπειρων τελικού τεστ (ημερομηνία, σκορ, επιτυχία/αποτυχία), αποθηκευμένο τοπικά στη συσκευή.
+**Resilience** — the exam is never lost if the app goes to the background, the screen locks, or the process is killed by the OS; progress and the timer resume correctly when you return.
 
-## Τεχνολογίες
+**History** — a record of past exam attempts (date, score, pass/fail), stored locally on the device.
+
+## Tech stack
 
 - Kotlin
 - Jetpack Compose + Material 3
 - Navigation-Compose
-- kotlinx.serialization (parsing της τράπεζας ερωτήσεων από bundled JSON)
-- Room (τοπικό ιστορικό αποτελεσμάτων)
-- ViewModel + StateFlow (χωρίς εξωτερικό DI framework)
+- kotlinx.serialization (parsing the question bank from bundled JSON)
+- Room (local result history)
+- ViewModel + StateFlow (no external DI framework)
 - minSdk 24 (Android 7.0)
 
-## Δομή project
+## Project structure
 
 ```
 app/src/main/
- ├── assets/                    questions.json, exam_config.json — η τράπεζα ερωτήσεων
+ ├── assets/                    questions.json, exam_config.json — the question bank
  ├── java/.../
- │    ├── data/                 μοντέλα, repositories (ερωτήσεις, config, ιστορικό, exam state)
+ │    ├── data/                 models, repositories (questions, config, history, exam state)
  │    │    └── local/           Room: entities, DAO, Database
  │    ├── ui/
  │    │    ├── home/            HomeScreen + loading/splash
- │    │    ├── chapterlist/     λίστα κεφαλαίων
- │    │    ├── practice/        εξάσκηση ανά κεφάλαιο
- │    │    ├── exam/            τελικό τεστ
- │    │    ├── results/         αποτελέσματα τεστ
- │    │    ├── history/         ιστορικό απόπειρων
- │    │    ├── about/           σχετικά με την εφαρμογή
- │    │    └── common/          κοινά components (OptionRow, κ.ά.)
+ │    │    ├── chapterlist/     chapter list
+ │    │    ├── practice/        practice by chapter
+ │    │    ├── exam/            final exam
+ │    │    ├── results/         exam results
+ │    │    ├── history/         attempt history
+ │    │    ├── about/           about the app
+ │    │    └── common/          shared components (OptionRow, etc.)
  │    └── navigation/           NavGraph
- └── res/                       εικονίδιο, εικονογράφηση, strings.xml
+ └── res/                       icon, artwork, strings.xml
 ```
 
-## Build & εκτέλεση
+## Build & run
 
 ```
 git clone https://github.com/XaplanterisNikos/XeiristisExamQuiz.git
 ```
 
-Άνοιξε τον φάκελο στο Android Studio, άφησε το Gradle να κάνει sync, και πάτησε Run σε emulator ή πραγματική συσκευή (Android 7.0+). Δεν χρειάζεται κανένα API key ή εξωτερική σύνδεση — η τράπεζα ερωτήσεων είναι ενσωματωμένη τοπικά στην εφαρμογή.
+Open the folder in Android Studio, let Gradle sync, then hit Run on an emulator or a real device (Android 7.0+). No API key or network connection is needed — the question bank is bundled locally with the app.
 
-## Ο δημιουργός
+## About the creator
 
-Η εφαρμογή φτιάχτηκε από τον Νίκο Ξαπλαντέρη. Πριν γίνω προγραμματιστής, ήμουν ο ίδιος χειριστής μηχανημάτων — έδωσα αυτές τις εξετάσεις και ξέρω από πρώτο χέρι πόσο βοηθάει να έχεις ένα καλό εργαλείο εξάσκησης. Αργότερα σπούδασα Πληροφορική και δουλεύω σήμερα ως προγραμματιστής λογισμικού. Αυτή η εφαρμογή είναι ένας συνδυασμός και των δύο κόσμων.
+The app was built by Nikos Xaplanteris. Before becoming a developer, I worked as a heavy machinery operator myself — I sat these exact exams, and I know first-hand how much a good practice tool helps. I later studied Computer Science and now work as a software developer. This app is a combination of both worlds.
 
-<!-- Πρόσθεσε εδώ email / LinkedIn αν θες να εμφανίζονται στο README -->
+<!-- Add email / LinkedIn here if you want them shown in the README -->
 
-## Άδεια χρήσης
+## License
 
-Το project διανέμεται με άδεια [MIT](LICENSE).
+This project is distributed under the [MIT](LICENSE) license.
