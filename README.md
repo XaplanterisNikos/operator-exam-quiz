@@ -13,7 +13,7 @@ Android app · Kotlin & Jetpack Compose · Practice app for the Greek heavy mach
 
 <!-- Once published, replace PLAY_STORE_URL below with the real link. -->
 <p align="center">
-  <a href="PLAY_STORE_URL">
+  <a href="https://play.google.com/store/apps/details?id=com.foxnks.xeiristisexamquiz">
     <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="200" alt="Get it on Google Play" />
   </a>
 </p>
