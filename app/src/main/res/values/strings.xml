@@ -2,6 +2,7 @@
     <string name="app_name">XeiristisExamQuiz</string>
 
     <!-- Κοινά strings της εφαρμογής, χρησιμοποιούνται σε περισσότερες από μία οθόνες -->
+    <string name="app_display">Quiz Χ.Μ.Ε.</string>
     <string name="app_display_name">Εξάσκηση Χειριστών Μηχανημάτων</string>
     <!-- Το επίσημο, μεγάλο κείμενο της εξέτασης· εμφανίζεται σαν υπότιτλος κάτω από το app_display_name στο HomeScreen -->
     <string name="home_official_title">Εξετάσεις για τις Επαγγελματικές Άδειες Χειριστών Μηχανημάτων Έργου - Διαδικασία Εξέτασης Θεωρητικού Μέρους</string>

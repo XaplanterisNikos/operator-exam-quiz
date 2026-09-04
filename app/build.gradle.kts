@@ -30,8 +30,8 @@ android {
         applicationId = "com.foxnks.xeiristisexamquiz"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -56,7 +56,7 @@ android {
             // υπογράφεται αυτόματα, χωρίς να χρειάζεται να ξαναδίνεις τα στοιχεία κάθε φορά.
             signingConfig = signingConfigs.getByName("release")
             optimization {
-                enable = false
+                enable = true
             }
         }
     }
